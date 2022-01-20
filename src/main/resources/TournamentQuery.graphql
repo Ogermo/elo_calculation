@@ -1,0 +1,11 @@
+query TournamentQuery{
+    calendar{
+        data{
+            match_id
+            round_id
+            start_dt
+            gf
+            ga
+        }
+    }
+}
