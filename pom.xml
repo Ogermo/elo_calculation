@@ -77,14 +77,17 @@
             <artifactId>ktor-client-core</artifactId>
             <version>1.6.7</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>1.6.2</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
+
 
             <plugin>
                 <groupId>com.expediagroup</groupId>
@@ -111,7 +114,8 @@
                         </goals>
                         <configuration>
                             <useOptionalInputWrapper>true</useOptionalInputWrapper>
-                            <packageName>com.elo.generated</packageName>
+                            <packageName>com.elo.elo_calculation.generated</packageName>
+                            <outputDirectory>src/main/java</outputDirectory>
                             <schemaFile>${project.build.directory}/schema.graphql</schemaFile>
                         </configuration>
                     </execution>

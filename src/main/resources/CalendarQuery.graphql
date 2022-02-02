@@ -1,0 +1,22 @@
+query CalendarQuery($page: Int, $first: Int){
+  calendar(filters:{has_score:true},first: $first, page: $page){
+    data {
+      match_id
+      round_id
+      tournament_id
+      start_dt
+      team1{
+        team_id
+        full_name
+      }
+      team2{
+        team_id
+        full_name
+      }
+      gf
+      ga
+      gfp
+      gap
+    }
+  }
+}
