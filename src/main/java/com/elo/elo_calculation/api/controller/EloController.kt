@@ -1,16 +1,11 @@
 package com.elo.elo_calculation.api.controller
 
 import com.elo.elo_calculation.api.service.EloService
-import com.elo.elo_calculation.api.service.StatisticsService
-import com.elo.elo_calculation.generated.ID
-import com.elo.elo_calculation.impl.repository.MatchRepository
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class HelloController(private val eloService: EloService,
-    private val statisticsService: StatisticsService) {
+class EloController(private val eloService: EloService) {
 
     @GetMapping("/download")
     fun download(): String? {
@@ -42,18 +37,4 @@ class HelloController(private val eloService: EloService,
         return  eloService.showTournaments()
     }
 
-    @GetMapping("/stats")
-    fun statistics(@RequestParam date : String) : Map<ID,Int>? {
-        return statisticsService.ratingOfAllTeamsOnCurrentDate(date)
-    }
-
-    @GetMapping("/diff")
-    fun diff(@RequestParam matchID : ID) : String{
-        return statisticsService.ratingDifference(matchID)
-    }
-
-    @GetMapping("/cur")
-    fun currentRating(@RequestParam teamID : ID, @RequestParam date: String) : Int{
-        return statisticsService.ratingOnCurrentDate(teamID,date)
-    }
 }

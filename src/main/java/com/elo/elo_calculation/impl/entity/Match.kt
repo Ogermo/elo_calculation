@@ -43,4 +43,33 @@ class Match {
             this.team2ID = team2ID.team_id
         }
     }
+
+    fun calculateResult() : Pair<Double,Double>{
+        var team1_W  = 0.0
+        var team2_W = 0.0
+        if (this.gf > this.ga){
+            team1_W = 1.0
+            team2_W = 0.0
+        } else if (this.ga > this.gf) {
+            team1_W = 0.0
+            team2_W = 1.0
+        } else {
+            if ((this.gfp == null) || (this.gap == null)){
+                team1_W = 0.5
+                team2_W = 0.5
+            } else {
+                if (this.gfp!! > this.gap!!) {
+                    team1_W = 0.75
+                    team2_W = 0.5
+                } else if (this.gap!! > this.gfp!!) {
+                    team1_W = 0.5
+                    team2_W = 0.75
+                } else {
+                    team1_W = 0.5
+                    team2_W = 0.5
+                }
+            }
+        }
+        return team1_W to team2_W
+    }
 }

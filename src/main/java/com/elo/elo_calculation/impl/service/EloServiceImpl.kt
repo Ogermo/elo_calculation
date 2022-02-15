@@ -97,36 +97,7 @@ class EloServiceImpl(
             var K : Int = tournamentRepository.findById(match.tournamentID).get().weight
             roundRepository.findById(match.roundID).get().weight?.let {K = it}
             match.weight?.let{K = it}
-            var team1_W  = 0.0
-            var team2_W = 0.0
-            if (match.postMatchPenalty){
-                if (match.gf > match.ga){
-                    team1_W = 0.75
-                    team2_W = 0.5
-                } else if (match.ga > match.gf) {
-                    team1_W = 0.5
-                    team2_W = 0.75
-                } else {
-                    team1_W = 0.5
-                    team2_W = 0.5
-                }
-            } else {
-                if ((match.gfp == null) || (match.gap == null)){
-                    team1_W = 0.5
-                    team2_W = 0.5
-                } else {
-                    if (match.gfp!! > match.gap!!) {
-                        team1_W = 0.75
-                        team2_W = 0.5
-                    } else if (match.gap!! > match.gfp!!) {
-                        team1_W = 0.5
-                        team2_W = 0.75
-                    } else {
-                        team1_W = 0.5
-                        team2_W = 0.5
-                    }
-                }
-            }
+            val result = match.calculateResult()
             //gf = team1 ; ga = team2
 
             teamMap.putIfAbsent(match.team1ID!!,DEFAULT_ELO)
@@ -135,7 +106,7 @@ class EloServiceImpl(
             val team1_We = 1.0 / (Math.pow(10.0,-(teamMap[match.team1ID]!! - teamMap[match.team2ID]!!)/600.0) + 1.0)
             val team2_We = 1.0 / (Math.pow(10.0,-(teamMap[match.team2ID]!! - teamMap[match.team1ID]!!)/600.0) + 1.0)
 
-            var eloDouble = K * (team1_W - team1_We)
+            var eloDouble = K * (result.first - team1_We)
             var eloDr : Int = 0
             if (eloDouble > 0){
                 eloDr = Math.ceil(eloDouble).toInt()
@@ -144,7 +115,7 @@ class EloServiceImpl(
             }
             teamMap.put(match.team1ID!!,teamMap[match.team1ID]!! + eloDr)
 
-            eloDouble = K * (team2_W - team2_We)
+            eloDouble = K * (result.second - team2_We)
             if (eloDouble > 0){
                 eloDr = Math.ceil(eloDouble).toInt()
             } else {
