@@ -12,12 +12,7 @@ class EloController(private val eloService: EloService) {
         return eloService.downloadFromServer()
     }
 
-    @GetMapping("/recalculate")
-    fun recalculate(): String? {
-        return eloService.recalculateElo()
-    }
-
-    @GetMapping("/recalculate_v2")
+    @GetMapping("/calculate")
     fun calculate(): String? {
         return eloService.calculateElo()
     }

@@ -13,7 +13,10 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.netty.http.client.HttpClient
+import java.lang.Math.ceil
 import java.util.*
+import kotlin.math.absoluteValue
+import kotlin.math.withSign
 
 @Service
 class EloServiceImpl(
@@ -85,47 +88,6 @@ class EloServiceImpl(
         return "Done!"
     }
 
-    override fun recalculateElo() : String{
-        val matchList = matchRepository.findAll()
-        matchList.sortBy { it.startDt }
-        val teamMap = mutableMapOf<ID,Int>()
-        for (match in matchList){
-            var K : Int = tournamentRepository.findById(match.tournamentID).get().weight
-            roundRepository.findById(match.roundID).get().weight?.let {K = it}
-            match.weight?.let{K = it}
-            val result = match.calculateResult()
-            //gf = team1 ; ga = team2
-
-            teamMap.putIfAbsent(match.team1ID!!,DEFAULT_ELO)
-            teamMap.putIfAbsent(match.team2ID!!,DEFAULT_ELO)
-
-            val team1_We = 1.0 / (Math.pow(10.0,-(teamMap[match.team1ID]!! - teamMap[match.team2ID]!!)/600.0) + 1.0)
-            val team2_We = 1.0 / (Math.pow(10.0,-(teamMap[match.team2ID]!! - teamMap[match.team1ID]!!)/600.0) + 1.0)
-
-            var eloDouble = K * (result.first - team1_We)
-            var eloDr : Int = 0
-            if (eloDouble > 0){
-                eloDr = Math.ceil(eloDouble).toInt()
-            } else {
-                eloDr = Math.floor(eloDouble).toInt()
-            }
-            teamMap.put(match.team1ID!!,teamMap[match.team1ID]!! + eloDr)
-
-            eloDouble = K * (result.second - team2_We)
-            if (eloDouble > 0){
-                eloDr = Math.ceil(eloDouble).toInt()
-            } else {
-                eloDr = Math.floor(eloDouble).toInt()
-            }
-            teamMap.put(match.team2ID!!,teamMap[match.team2ID]!! + eloDr)
-
-            matchRepository.save(match)
-            eloRepository.save(Elo(match.matchID!!,match.team1ID!!,teamMap[match.team1ID]!!))
-            eloRepository.save(Elo(match.matchID!!,match.team2ID!!,teamMap[match.team2ID]!!))
-        }
-        return "Done!"
-    }
-
     override fun calculateElo(): String {
         while (true){
             val match = matchRepository.findMatchToCalculate()?: return "Done"
@@ -148,21 +110,10 @@ class EloServiceImpl(
         val team2_We = 1.0 / (Math.pow(10.0,-(team2Elo - team1Elo)/600.0) + 1.0)
 
         var eloDouble = K * (result.first - team1_We)
-        var eloDr : Int = 0
-        if (eloDouble > 0){
-            eloDr = Math.ceil(eloDouble).toInt()
-        } else {
-            eloDr = Math.floor(eloDouble).toInt()
-        }
-        team1Elo += eloDr
+        team1Elo += ceil(eloDouble.absoluteValue).withSign(eloDouble).toInt()
 
         eloDouble = K * (result.second - team2_We)
-        if (eloDouble > 0){
-            eloDr = Math.ceil(eloDouble).toInt()
-        } else {
-            eloDr = Math.floor(eloDouble).toInt()
-        }
-        team2Elo += eloDr
+        team2Elo += ceil(eloDouble.absoluteValue).withSign(eloDouble).toInt()
 
 
         //save calculated Elo

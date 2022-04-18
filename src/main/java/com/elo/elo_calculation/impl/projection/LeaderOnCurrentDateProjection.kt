@@ -12,7 +12,6 @@ fun List<LeaderOnCurrentDateProjection>.toTable() : String{
     var answer = "  <table border = '1'>" +
             "   <caption>Лидер рейтинга на указанную дату</caption>" +
             "   <tr>" +
-            "    <th>MatchID</th>" +
             "    <th>TeamID</th>" +
             "    <th>Elo</th>"+
             "    <th>Date</th>"+

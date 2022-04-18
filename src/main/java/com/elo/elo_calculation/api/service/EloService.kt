@@ -5,7 +5,6 @@ import com.elo.elo_calculation.impl.entity.Match;
 
 interface EloService {
     fun downloadFromServer() : String
-    fun recalculateElo() : String
     fun calculateElo() : String
     fun calculateMatch(match: Match)
     fun showTournaments() : String

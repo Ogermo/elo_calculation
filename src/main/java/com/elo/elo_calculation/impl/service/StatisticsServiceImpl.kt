@@ -26,7 +26,7 @@ class StatisticsServiceImpl(
         val team1PrevElo = eloRepository.findPrevMatchElo(match[0].teamID,match[0].matchID)?.elo ?: DEFAULT_ELO
         val team2PrevElo = eloRepository.findPrevMatchElo(match[1].teamID,match[1].matchID)?.elo ?: DEFAULT_ELO
         val answer = "Team 1 difference = " + (match[0].elo - team1PrevElo) +
-                "Team 2 difference = " + (match[1].elo - team2PrevElo)
+                " Team 2 difference = " + (match[1].elo - team2PrevElo)
         return answer
     }
 
@@ -62,6 +62,7 @@ class StatisticsServiceImpl(
                 "    <th>MatchID</th>" +
                 "    <th>TeamID</th>" +
                 "    <th>Elo</th>"+
+                "    <th>Date</th>"+
                 "   </tr>"
         var highestElo = DEFAULT_ELO
         var highestTeam : ID = ""
@@ -73,7 +74,7 @@ class StatisticsServiceImpl(
                 highestElo = value.elo
                 highestTeam = value.teamID
                 table += "<tr><td>${value.matchID}</td><td>${value.teamID}</td>" +
-                        "<td>${value.elo}</td></tr>"
+                        "<td>${value.elo}</td><td>${matchRepository.findById(value.matchID).get().startDt}</td></tr>"
             }
         }
         return table

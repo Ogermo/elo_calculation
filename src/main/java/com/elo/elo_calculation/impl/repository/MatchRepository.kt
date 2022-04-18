@@ -52,7 +52,7 @@ public interface MatchRepository : JpaRepository<Match, ID>, JpaSpecificationExe
             "SELECT *, MAX(start_Dt) OVER (PARTITION BY teamID) as  maxStart_Dt FROM " +
             "(SELECT u1.MATCHID, u1.ELO, u1.TEAMID, u2.START_DT FROM ELO u1 " +
             "JOIN MATCH u2 ON u1.MATCHID = u2.MATCHID " +
-            "WHERE u2.START_DT <= ?1) " +
+            "WHERE u2.START_DT <= ?1)) " +
             "WHERE start_Dt = maxStart_Dt " +
             ") WHERE matchID = maxMatchID",
     nativeQuery = true)
@@ -63,7 +63,7 @@ public interface MatchRepository : JpaRepository<Match, ID>, JpaSpecificationExe
             "SELECT *, MAX(Elo) OVER (PARTITION BY teamID) as  maxElo FROM " +
             "(SELECT u1.MATCHID, u1.ELO, u1.TEAMID, u2.START_DT FROM ELO u1 " +
             "JOIN MATCH u2 ON u1.MATCHID = u2.MATCHID" +
-            ") WHERE Elo = maxElo " +
+            ")) WHERE Elo = maxElo " +
             ") WHERE matchID = maxMatchID",
     nativeQuery = true)
     fun findMaxEloOfAllTeams() : List<MaxEloOfAllTeamsProjection>
@@ -134,7 +134,7 @@ public interface MatchRepository : JpaRepository<Match, ID>, JpaSpecificationExe
             "OVER (PARTITION BY teamID ORDER BY start_Dt, matchID),500) AS previous_elo ,  start_Dt  FROM ( " +
             "SELECT u1.MATCHID, u1.ELO, u1.TEAMID, u2.START_DT FROM ELO u1 " +
             "JOIN MATCH u2 ON u1.MATCHID = u2.MATCHID " +
-            "ORDER BY START_DT, MATCHID " +
+            "ORDER BY START_DT, MATCHID) " +
             ") ORDER BY ABS(Elo - previous_Elo) DESC",
     nativeQuery = true)
     fun findMaxRatingDifference() : List<MaxRatingDifferenceProjection>

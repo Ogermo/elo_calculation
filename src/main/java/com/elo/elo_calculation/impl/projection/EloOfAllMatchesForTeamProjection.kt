@@ -17,7 +17,7 @@ fun List<EloOfAllMatchesForTeamProjection>.toTable() : String{
         answer = "Нет данных для указанной команды <br>"
     }
     answer += "  <table border = '1'>" +
-            "   <caption>Рейтинг команды ${teamId}за всю историю</caption>" +
+            "   <caption>Рейтинг команды ${teamId}  за всю историю</caption>" +
             "   <tr>" +
             "    <th>MatchID</th>" +
             "    <th>Elo</th>"+
