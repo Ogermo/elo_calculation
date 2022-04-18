@@ -4,8 +4,10 @@ import com.elo.elo_calculation.generated.ID
 import com.elo.elo_calculation.generated.calendarquery.Team
 import javax.persistence.Entity
 import javax.persistence.Id
+import javax.persistence.Table
 
 @Entity
+@Table(name = "MATCH")
 class Match {
     @Id
     var matchID : ID? = null
@@ -21,8 +23,7 @@ class Match {
     var team1ID : ID? = null
     var team2ID : ID? = null
     var postMatchPenalty : Boolean = false
-    var team1Elo : Int? = null
-    var team2Elo : Int? = null
+    var calculated: Boolean = false
 
     constructor()
 

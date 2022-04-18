@@ -2,14 +2,8 @@ package com.elo.elo_calculation.impl.service;
 import com.elo.elo_calculation.api.service.EloService
 import com.elo.elo_calculation.generated.CalendarQuery
 import com.elo.elo_calculation.generated.ID
-import com.elo.elo_calculation.impl.entity.Match
-import com.elo.elo_calculation.impl.entity.Round
-import com.elo.elo_calculation.impl.entity.Team
-import com.elo.elo_calculation.impl.entity.Tournament
-import com.elo.elo_calculation.impl.repository.MatchRepository
-import com.elo.elo_calculation.impl.repository.RoundRepository
-import com.elo.elo_calculation.impl.repository.TeamRepository
-import com.elo.elo_calculation.impl.repository.TournamentRepository
+import com.elo.elo_calculation.impl.entity.*
+import com.elo.elo_calculation.impl.repository.*
 import com.expediagroup.graphql.client.jackson.types.OptionalInput
 import com.expediagroup.graphql.client.spring.GraphQLWebClient
 import com.expediagroup.graphql.client.types.GraphQLClientResponse
@@ -19,10 +13,12 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.netty.http.client.HttpClient
+import java.util.*
 
 @Service
 class EloServiceImpl(
     private val matchRepository: MatchRepository,
+    private val eloRepository: EloRepository,
     private val roundRepository: RoundRepository,
     private val teamRepository: TeamRepository,
     private val tournamentRepository: TournamentRepository
@@ -41,9 +37,9 @@ class EloServiceImpl(
     val DEFAULT_ELO = 500
 
     override fun downloadFromServer() : String{
-        var i = 0
+        var page = 0
         while(true){
-            val variables = CalendarQuery.Variables(first = OptionalInput.Defined(500),page = OptionalInput.Defined(i))
+            val variables = CalendarQuery.Variables(first = OptionalInput.Defined(500),page = OptionalInput.Defined(page))
             val request = CalendarQuery(variables)
             var response : GraphQLClientResponse<CalendarQuery.Result>
             runBlocking{
@@ -84,7 +80,7 @@ class EloServiceImpl(
             if (response.data!!.calendar!!.data.isEmpty()){
                 break
             }
-            i++
+            page++
         }
         return "Done!"
     }
@@ -122,12 +118,75 @@ class EloServiceImpl(
                 eloDr = Math.floor(eloDouble).toInt()
             }
             teamMap.put(match.team2ID!!,teamMap[match.team2ID]!! + eloDr)
-            
-            match.team1Elo = teamMap[match.team1ID]
-            match.team2Elo = teamMap[match.team2ID]
+
             matchRepository.save(match)
+            eloRepository.save(Elo(match.matchID!!,match.team1ID!!,teamMap[match.team1ID]!!))
+            eloRepository.save(Elo(match.matchID!!,match.team2ID!!,teamMap[match.team2ID]!!))
         }
         return "Done!"
+    }
+
+    override fun calculateElo(): String {
+        while (true){
+            val match = matchRepository.findMatchToCalculate()?: return "Done"
+            calculateMatch(match)
+        }
+    }
+
+    override fun calculateMatch(match: Match) {
+
+        var K : Int = tournamentRepository.findById(match.tournamentID).get().weight
+        roundRepository.findById(match.roundID).get().weight?.let {K = it}
+        match.weight?.let{K = it}
+
+        val result = match.calculateResult()
+
+        var team1Elo = eloRepository.findPrevMatchElo(match.team1ID!!,match.matchID!!)?.elo ?: DEFAULT_ELO
+        var team2Elo = eloRepository.findPrevMatchElo(match.team2ID!!,match.matchID!!)?.elo ?: DEFAULT_ELO
+
+        val team1_We = 1.0 / (Math.pow(10.0,-(team1Elo - team2Elo)/600.0) + 1.0)
+        val team2_We = 1.0 / (Math.pow(10.0,-(team2Elo - team1Elo)/600.0) + 1.0)
+
+        var eloDouble = K * (result.first - team1_We)
+        var eloDr : Int = 0
+        if (eloDouble > 0){
+            eloDr = Math.ceil(eloDouble).toInt()
+        } else {
+            eloDr = Math.floor(eloDouble).toInt()
+        }
+        team1Elo += eloDr
+
+        eloDouble = K * (result.second - team2_We)
+        if (eloDouble > 0){
+            eloDr = Math.ceil(eloDouble).toInt()
+        } else {
+            eloDr = Math.floor(eloDouble).toInt()
+        }
+        team2Elo += eloDr
+
+
+        //save calculated Elo
+        eloRepository.save(Elo(match.matchID!!,match.team1ID!!,team1Elo))
+        eloRepository.save(Elo(match.matchID!!,match.team2ID!!,team2Elo))
+
+
+        //Mark next matches as needed to be calculated
+        val matchTeam1 = matchRepository.findNextMatch(match.team1ID!!,match.matchID!!)
+        val matchTeam2 = matchRepository.findNextMatch(match.team2ID!!,match.matchID!!)
+
+        if (matchTeam1 != null){
+            matchTeam1.calculated = false
+            matchRepository.save(matchTeam1)
+        }
+        if (matchTeam2 != null){
+            matchTeam2.calculated = false
+            matchRepository.save(matchTeam2)
+        }
+
+        //Mark this match as done
+        match.calculated = true
+        matchRepository.save(match)
+
     }
 
     override fun showMatches(): String {
@@ -136,8 +195,8 @@ class EloServiceImpl(
         list.sortBy { it.startDt }
         for (index in list){
             answer += "<br>" + index.matchID + " " + index.startDt +
-                    " team1: " + index.team1ID + ":" + index.team1Elo +
-                    " team2: " + index.team2ID + ":" + index.team2Elo
+                    " team1: " + index.team1ID + ":" +
+                    " team2: " + index.team2ID + ":"
         }
         return answer
     }

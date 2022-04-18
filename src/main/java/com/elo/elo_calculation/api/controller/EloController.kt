@@ -17,6 +17,11 @@ class EloController(private val eloService: EloService) {
         return eloService.recalculateElo()
     }
 
+    @GetMapping("/recalculate_v2")
+    fun calculate(): String? {
+        return eloService.calculateElo()
+    }
+
     @GetMapping("/matches")
     fun matches() : String? {
         return  eloService.showMatches()

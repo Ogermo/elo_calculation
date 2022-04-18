@@ -5,61 +5,33 @@ import com.elo.elo_calculation.api.service.StatisticsService
 import com.elo.elo_calculation.generated.ID
 import com.elo.elo_calculation.impl.projection.PlacementAllProjection
 import com.elo.elo_calculation.impl.projection.toTable
-import com.elo.elo_calculation.impl.repository.MatchRepository
-import com.elo.elo_calculation.impl.repository.RoundRepository
-import com.elo.elo_calculation.impl.repository.TeamRepository
-import com.elo.elo_calculation.impl.repository.TournamentRepository
+import com.elo.elo_calculation.impl.repository.*
+import com.elo.elo_calculation.impl.serializable.EloId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
 class StatisticsServiceImpl(
     private val matchRepository: MatchRepository,
+    private val eloRepository: EloRepository,
+    private val teamRepository: TeamRepository
 ) : StatisticsService {
 
+    val DEFAULT_ELO = 500
 
     override fun ratingDifference(matchID: ID) : String{
-        System.out.println(matchID)
-        val match = matchRepository.findByIdOrNull(matchID) ?: throw Exception()
-        val matchBeforeTeam1 = matchRepository.findMatchesBefore(match.startDt!!,match.team1ID!!).lastOrNull()
-        val eloBeforeTeam1 = run {
-            if (matchBeforeTeam1 == null){
-                500
-            } else {
-                if (matchBeforeTeam1.team1ID.equals(match.team1ID)){
-                    matchBeforeTeam1.team1Elo ?: throw Exception()
-                } else {
-                    matchBeforeTeam1.team2Elo ?: throw Exception()
-                }
-            }
-        }
-        val matchBeforeTeam2 = matchRepository.findMatchesBefore(match.startDt!!,match.team2ID!!).lastOrNull()
-        val eloBeforeTeam2 = run {
-            if (matchBeforeTeam2 == null){
-                500
-            } else {
-                if (matchBeforeTeam2.team2ID.equals(match.team2ID)){
-                    matchBeforeTeam2.team2Elo ?: throw Exception()
-                } else {
-                    matchBeforeTeam2.team1Elo ?: throw Exception()
-                }
-            }
-        }
+        val match = eloRepository.findByMatchId(matchID)
+        if (match.size != 2) throw Exception()
 
-        val answer = "Team 1 difference = " + (match.team1Elo!! - eloBeforeTeam1) +
-                "Team 2 difference = " + (match.team2Elo!! - eloBeforeTeam2)
-
+        val team1PrevElo = eloRepository.findPrevMatchElo(match[0].teamID,match[0].matchID)?.elo ?: DEFAULT_ELO
+        val team2PrevElo = eloRepository.findPrevMatchElo(match[1].teamID,match[1].matchID)?.elo ?: DEFAULT_ELO
+        val answer = "Team 1 difference = " + (match[0].elo - team1PrevElo) +
+                "Team 2 difference = " + (match[1].elo - team2PrevElo)
         return answer
     }
 
     override fun ratingOnCurrentDate(teamID : ID, date: String) : Int{
-        val match = matchRepository.findMatchesBefore(date, teamID).lastOrNull() ?: return 500
-        if (match.team1ID.equals(teamID)){
-            return match.team1Elo ?: throw Exception()
-        } else
-        {
-            return match.team2Elo ?: throw Exception()
-        }
+        return eloRepository.findEloOnCurrentDate(teamID,date)?.elo ?: teamRepository.findByIdOrNull(teamID)?.let { return DEFAULT_ELO } ?: throw Exception()
     }
 
     override fun ratingOfAllTeamsOnCurrentDate(date: String) : String {
@@ -67,16 +39,7 @@ class StatisticsServiceImpl(
     }
 
     override fun ratingOfTeamForAllTime(teamID: ID): String {
-        val matches = matchRepository.findAllMatchesOfTeam(teamID)
-        var answer = ""
-        for (match in matches){
-            if (teamID.equals(match.team1ID)){
-                answer += "matchID: " + match.matchID + " Elo: " + match.team1Elo + " Date: " + match.startDt + "<br>"
-            } else {
-                answer += "matchID: " + match.matchID + " Elo: " + match.team2Elo + " Date: " + match.startDt + "<br>"
-            }
-        }
-        return answer
+        return eloRepository.findEloOfAllMatchesForTeam(teamID).toTable()
     }
 
     override fun maxEloOfTeam(teamID : ID) : String {
@@ -92,32 +55,28 @@ class StatisticsServiceImpl(
     }
 
     override fun leaderHistory(): String {
-        val table = matchRepository.findAll()
-        table.sortBy { it.startDt }
-        //TODO("ASK HOW BETTER DO IT")
-        var answer = ""
-        var leaderTeam : ID = ""
-        var leaderElo : Int = 0
-        for (match in table){
-            if (match.team1Elo!! > match.team2Elo!!){
-                if (match.team1Elo!! > leaderElo){
-                    leaderElo = match.team1Elo!!
-                    if (!match.team1ID.equals(leaderTeam)){
-                        leaderTeam = match.team1ID!!
-                        answer += leaderTeam + " " + leaderElo + " " + match.startDt + "<br>"
-                    }
-                }
-            } else {
-                if (match.team2Elo!! > leaderElo){
-                    leaderElo = match.team2Elo!!
-                    if (!match.team2ID.equals(leaderTeam)){
-                        leaderTeam = match.team2ID!!
-                        answer += leaderTeam + " " + leaderElo + " " + match.startDt + "<br>"
-                    }
-                }
+        val eloList = eloRepository.findAllSorted()
+        var table =  "  <table border = '1'>" +
+                "   <caption>Лидеры рейтинга за всю историю</caption>" +
+                "   <tr>" +
+                "    <th>MatchID</th>" +
+                "    <th>TeamID</th>" +
+                "    <th>Elo</th>"+
+                "   </tr>"
+        var highestElo = DEFAULT_ELO
+        var highestTeam : ID = ""
+        for (value in eloList){
+            if (value.teamID == highestTeam){
+                highestElo = value.elo
+            }
+            else if (value.elo > highestElo){
+                highestElo = value.elo
+                highestTeam = value.teamID
+                table += "<tr><td>${value.matchID}</td><td>${value.teamID}</td>" +
+                        "<td>${value.elo}</td></tr>"
             }
         }
-        return answer
+        return table
     }
 
     override fun matchHistory(teamID: ID): String {
