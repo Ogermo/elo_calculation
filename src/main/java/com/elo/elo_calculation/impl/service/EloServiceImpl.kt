@@ -103,41 +103,37 @@ class EloServiceImpl(
 
         val result = match.calculateResult()
 
-        var team1Elo = eloRepository.findPrevMatchElo(match.team1ID!!,match.matchID!!)?.elo ?: DEFAULT_ELO
-        var team2Elo = eloRepository.findPrevMatchElo(match.team2ID!!,match.matchID!!)?.elo ?: DEFAULT_ELO
+        val team1Elo = eloRepository.findPrevMatchElo(match.team1ID!!,match.matchID!!)?.elo ?: DEFAULT_ELO
+        val team2Elo = eloRepository.findPrevMatchElo(match.team2ID!!,match.matchID!!)?.elo ?: DEFAULT_ELO
 
-        val team1_We = 1.0 / (Math.pow(10.0,-(team1Elo - team2Elo)/600.0) + 1.0)
-        val team2_We = 1.0 / (Math.pow(10.0,-(team2Elo - team1Elo)/600.0) + 1.0)
+        //calculate elo for first team
+        calculateEloForTeam(matchID = match.matchID!!,teamID = match.team1ID!!, elo = team1Elo,
+            diff = team1Elo - team2Elo, K = K, W = result.first)
 
-        var eloDouble = K * (result.first - team1_We)
-        team1Elo += ceil(eloDouble.absoluteValue).withSign(eloDouble).toInt()
+        //calculate elo for second team
+        calculateEloForTeam(matchID = match.matchID!!,teamID = match.team2ID!!, elo = team2Elo,
+            diff = team2Elo - team1Elo, K = K, W = result.second)
 
-        eloDouble = K * (result.second - team2_We)
-        team2Elo += ceil(eloDouble.absoluteValue).withSign(eloDouble).toInt()
-
-
-        //save calculated Elo
-        eloRepository.save(Elo(match.matchID!!,match.team1ID!!,team1Elo))
-        eloRepository.save(Elo(match.matchID!!,match.team2ID!!,team2Elo))
-
-
-        //Mark next matches as needed to be calculated
-        val matchTeam1 = matchRepository.findNextMatch(match.team1ID!!,match.matchID!!)
-        val matchTeam2 = matchRepository.findNextMatch(match.team2ID!!,match.matchID!!)
-
-        if (matchTeam1 != null){
-            matchTeam1.calculated = false
-            matchRepository.save(matchTeam1)
-        }
-        if (matchTeam2 != null){
-            matchTeam2.calculated = false
-            matchRepository.save(matchTeam2)
-        }
 
         //Mark this match as done
         match.calculated = true
         matchRepository.save(match)
 
+    }
+
+    fun calculateEloForTeam(matchID: ID,teamID:ID, elo: Int, diff: Int,  K:Int,W:Double){
+
+        val teamWe = 1.0 / (Math.pow(10.0,-(diff)/600.0) + 1.0)
+        val eloDouble = K * (W - teamWe)
+        val eloRounded = ceil(eloDouble.absoluteValue).withSign(eloDouble).toInt()
+
+        eloRepository.save(Elo(matchID,teamID,elo + eloRounded))
+
+        val nextMatch = matchRepository.findNextMatch(teamID,matchID)
+        if (nextMatch != null){
+            nextMatch.calculated = false
+            matchRepository.save(nextMatch)
+        }
     }
 
     override fun showMatches(): String {
