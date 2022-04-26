@@ -8,6 +8,7 @@ import com.expediagroup.graphql.client.jackson.types.OptionalInput
 import com.expediagroup.graphql.client.spring.GraphQLWebClient
 import com.expediagroup.graphql.client.types.GraphQLClientResponse
 import kotlinx.coroutines.runBlocking
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.client.reactive.ClientHttpConnector
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.stereotype.Service
@@ -48,6 +49,10 @@ class EloServiceImpl(
             runBlocking{
                 response = client.execute(request)
                 for (match in response.data!!.calendar!!.data){
+                    //Check if match data is correct and complete
+                    if ((match.team1 == null) || (match.team2 == null) || (match.ga == null) || (match.gf == null)){
+                        continue
+                    }
 
                     if (!tournamentRepository.existsById(match.tournament_id)){
                         tournamentRepository.save(Tournament(match.tournament_id))
@@ -55,15 +60,31 @@ class EloServiceImpl(
                     if (!roundRepository.existsById(match.round_id)){
                         roundRepository.save(Round(match.round_id))
                     }
-                    if (match.team1 != null){
-                        if (!teamRepository.existsById(match.team1.team_id)){
-                            teamRepository.save(Team(match.team1.team_id,match.team1.full_name))
-                        }
+                    if (!teamRepository.existsById(match.team1.team_id)){
+                        teamRepository.save(Team(match.team1.team_id,match.team1.full_name))
                     }
-                    if (match.team2 != null){
-                        if (!teamRepository.existsById(match.team2.team_id)){
-                            teamRepository.save(Team(match.team2.team_id,match.team2.full_name))
+                    if (!teamRepository.existsById(match.team2.team_id)){
+                        teamRepository.save(Team(match.team2.team_id,match.team2.full_name))
+                    }
+                    //check match
+                    val oldMatch = matchRepository.findByIdOrNull(match.match_id)
+                    if (oldMatch != null)
+                    {
+                        //check if any of important values were changed
+                        //startDt,gf,ga,gfp,gap
+                        if ((oldMatch.startDt != match.start_dt) ||
+                            (oldMatch.gf != match.gf) || (oldMatch.ga != match.ga) ||
+                            (oldMatch.gfp != match.gfp) || (oldMatch.gap != match.gap))
+                        {
+                            oldMatch.gf = match.gf
+                            oldMatch.ga = match.ga
+                            oldMatch.gfp = match.gfp
+                            oldMatch.gap = match.gap
+                            oldMatch.startDt = match.start_dt
+                            oldMatch.calculated = false
+                            matchRepository.save(oldMatch)
                         }
+                        continue
                     }
 
                     matchRepository.save(Match(
@@ -71,8 +92,8 @@ class EloServiceImpl(
                         match.round_id,
                         match.tournament_id,
                         match.start_dt,
-                        match.gf!!,
-                        match.ga!!,
+                        match.gf,
+                        match.ga,
                         match.gfp,
                         match.gap,
                         match.team1,
@@ -95,7 +116,7 @@ class EloServiceImpl(
         }
     }
 
-    override fun calculateMatch(match: Match) {
+    private fun calculateMatch(match: Match) {
 
         var K : Int = tournamentRepository.findById(match.tournamentID).get().weight
         roundRepository.findById(match.roundID).get().weight?.let {K = it}
@@ -121,7 +142,7 @@ class EloServiceImpl(
 
     }
 
-    fun calculateEloForTeam(matchID: ID,teamID:ID, elo: Int, diff: Int,  K:Int,W:Double){
+    private fun calculateEloForTeam(matchID: ID,teamID:ID, elo: Int, diff: Int,  K:Int,W:Double){
 
         val teamWe = 1.0 / (Math.pow(10.0,-(diff)/600.0) + 1.0)
         val eloDouble = K * (W - teamWe)
