@@ -66,7 +66,7 @@ public interface MatchRepository : JpaRepository<Match, ID>, JpaSpecificationExe
             ")) WHERE Elo = maxElo " +
             ") WHERE matchID = maxMatchID",
     nativeQuery = true)
-    fun findMaxEloOfAllTeams() : List<MaxEloOfAllTeamsProjection>
+    fun findMaxEloOfAllTeams() : List<MaxEloProjection>
 
     @Query("SELECT matchID, teamID, elo, start_Dt FROM ( " +
             "SELECT *, MAX(matchID) OVER (PARTITION BY teamID) as maxMatchID FROM ( " +
@@ -77,7 +77,7 @@ public interface MatchRepository : JpaRepository<Match, ID>, JpaSpecificationExe
             ") WHERE Elo = maxElo " +
             ") WHERE matchID = maxMatchID",
     nativeQuery = true)
-    fun findMaxEloOfTeam(team: ID) : List<MaxEloOfTeamProjection>
+    fun findMaxEloOfTeam(team: ID) : List<MaxEloProjection>
 
     @Query(value = "SELECT teamID, Elo, Start_Dt FROM ( " +
             "SELECT u1.MATCHID, u1.ELO, u1.TEAMID, u2.START_DT FROM ELO u1 " +
@@ -108,7 +108,7 @@ public interface MatchRepository : JpaRepository<Match, ID>, JpaSpecificationExe
             "JOIN MATCH u2 ON u1.MATCHID = u2.MATCHID) " +
             "GROUP BY teamID ",
     nativeQuery = true)
-    fun findMatchHistoryForAllTeams() : List<MatchHistoryForAllTeamsProjection>
+    fun findMatchHistoryForAllTeams() : List<MatchHistoryProjection>
 
     @Query(value = "SELECT teamID as teamID, COUNT(matchID) as amount ,SUM(team_Goal) as goals_given, SUM(opponent_goal) as goals_received, " +
             "COUNT(CASE WHEN team_Goal > opponent_Goal THEN 1 " +
@@ -150,7 +150,7 @@ public interface MatchRepository : JpaRepository<Match, ID>, JpaSpecificationExe
             ") WHERE matchID = maxMatchID " +
             "ORDER BY elo DESC",
     nativeQuery = true)
-    fun findPlacementAll(date: String) : List<PlacementAllProjection>
+    fun findPlacementAll(date: String) : List<PlacementProjection>
 
     @Query(value = "SELECT * FROM( " +
             "SELECT ROW_NUMBER() OVER(ORDER BY (Elo) DESC) AS placement, teamID, elo FROM ( " +
@@ -164,5 +164,5 @@ public interface MatchRepository : JpaRepository<Match, ID>, JpaSpecificationExe
             "ORDER BY elo DESC " +
             ") WHERE teamID = ?2",
         nativeQuery = true)
-    fun findPlacementTeam(date: String , teamID: ID) : List<PlacementTeamProjection>
+    fun findPlacementTeam(date: String , teamID: ID) : List<PlacementProjection>
 }

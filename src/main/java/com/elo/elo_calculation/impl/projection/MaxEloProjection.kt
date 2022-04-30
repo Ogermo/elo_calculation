@@ -2,14 +2,14 @@ package com.elo.elo_calculation.impl.projection
 
 import com.elo.elo_calculation.generated.ID
 
-interface MaxEloOfTeamProjection {
+interface MaxEloProjection {
     val matchID : ID?
     val teamID : ID?
     val elo : Int?
     val start_Dt : String?
 }
 
-fun List<MaxEloOfTeamProjection>.toTable() : String{
+fun List<MaxEloProjection>.toTable() : String{
     var answer = "  <table border = '1'>" +
             "   <caption>Максимальный рейтинг указанной команды (значение и дата)</caption>" +
             "   <tr>" +

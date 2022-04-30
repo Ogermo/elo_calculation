@@ -2,16 +2,16 @@ package com.elo.elo_calculation.impl.projection
 
 import com.elo.elo_calculation.generated.ID
 
-interface PlacementTeamProjection {
+interface PlacementProjection {
     val placement : Int?
     val teamID : ID?
     val elo : Int?
 }
 
-fun List<PlacementTeamProjection>.toTable() : String{
+fun List<PlacementProjection>.toTable() : String{
     var answer = "  <table border = '1'>" +
             "   <caption>Показатели рейтинга (позиция в общем списке и значение рейтинга)" +
-            " на две указанные даты для указанной команды</caption>" +
+            " на две указанные даты для всех команд</caption>" +
             "   <tr>" +
             "    <th>Placement</th>" +
             "    <th>TeamID</th>" +

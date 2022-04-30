@@ -2,20 +2,22 @@ package com.elo.elo_calculation.api.controller
 
 import com.elo.elo_calculation.api.service.StatisticsService
 import com.elo.elo_calculation.generated.ID
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import com.elo.elo_calculation.impl.entity.Elo
+import com.elo.elo_calculation.impl.projection.*
+import org.springframework.web.bind.annotation.*
 
+@CrossOrigin(origins = ["http://localhost:3000"])
 @RestController
+@RequestMapping("/api/elo")
 class StatisticsController(private val statisticsService: StatisticsService) {
 
     @GetMapping("/stats")
-    fun statistics(@RequestParam date : String) : String {
+    fun statistics(@RequestParam date : String) : List<LastMatchOfAllTeamsBeforeDateProjection> {
         return statisticsService.ratingOfAllTeamsOnCurrentDate(date)
     }
 
     @GetMapping("/diff")
-    fun diff(@RequestParam matchID : ID) : String{
+    fun diff(@RequestParam matchID : ID) : List<RatingChange>{
         return statisticsService.ratingDifference(matchID)
     }
 
@@ -25,31 +27,33 @@ class StatisticsController(private val statisticsService: StatisticsService) {
     }
 
     @GetMapping("/max")
-    fun maxRating(@RequestParam(required = false) teamID : ID?) : String{
-        if(teamID == null){
+    fun maxRating(@RequestParam(required = false) teamID : ID?) : List<MaxEloProjection>{
+        if(teamID == null) {
             return statisticsService.maxEloOfAllTeams()
-        } else {
+        }
+        else {
             return statisticsService.maxEloOfTeam(teamID)
         }
     }
 
     @GetMapping("/history")
-    fun historyRating(@RequestParam teamID : ID) : String{
+    fun historyRating(@RequestParam teamID : ID) : List<EloOfAllMatchesForTeamProjection> {
         return statisticsService.ratingOfTeamForAllTime(teamID)
     }
 
     @GetMapping("/top")
-    fun topRating(@RequestParam(required = false) date : String?) : String{
-        if (date == null){
-            return statisticsService.leaderHistory()
-        } else
-        {
-            return statisticsService.leaderOnCurrentDate(date)
-        }
+    fun topRating(date : String) : List<LeaderOnCurrentDateProjection> {
+        return statisticsService.leaderOnCurrentDate(date)
     }
 
+    @GetMapping("/history")
+    fun leaderHistory() : List<EloWithDate>{
+        return statisticsService.leaderHistory()
+    }
+
+
     @GetMapping("/matchStats")
-    fun matchHistory(@RequestParam(required = false) teamID: ID?) : String {
+    fun matchHistory(@RequestParam(required = false) teamID: ID?) : List<MatchHistoryProjection> {
         if(teamID == null){
             return statisticsService.matchHistoryAll()
         } else {
@@ -58,12 +62,12 @@ class StatisticsController(private val statisticsService: StatisticsService) {
     }
 
     @GetMapping("/maxDiff")
-    fun maxDifference() : String {
+    fun maxDifference() : List<MaxRatingDifferenceProjection> {
         return statisticsService.maxRatingDifference()
     }
 
     @GetMapping("/comparison")
-    fun compareDates(@RequestParam date1:String, @RequestParam date2 : String, @RequestParam(required = false) teamID: ID?) : String{
+    fun compareDates(@RequestParam date1:String, @RequestParam date2 : String, @RequestParam(required = false) teamID: ID?) : List<List<PlacementProjection>> {
         if (teamID == null){
             return statisticsService.compareDatesAll(date1,date2)
         } else {
