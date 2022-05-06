@@ -6,7 +6,7 @@ import com.elo.elo_calculation.impl.projection.*
 
 interface StatisticsService {
     fun ratingDifference(matchID: ID) : List<RatingChange>
-    fun ratingOnCurrentDate(teamID : ID, date: String) : Int
+    fun ratingOnCurrentDate(teamID : ID, date: String) : List<Elo>
     fun ratingOfAllTeamsOnCurrentDate(date: String) : List<LastMatchOfAllTeamsBeforeDateProjection>
     fun ratingOfTeamForAllTime(teamID : ID) : List<EloOfAllMatchesForTeamProjection>
     fun maxEloOfAllTeams() : List<MaxEloProjection>

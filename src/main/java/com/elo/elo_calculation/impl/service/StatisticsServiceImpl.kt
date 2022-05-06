@@ -3,6 +3,7 @@ package com.elo.elo_calculation.impl.service
 import com.elo.elo_calculation.api.service.EloService
 import com.elo.elo_calculation.api.service.StatisticsService
 import com.elo.elo_calculation.generated.ID
+import com.elo.elo_calculation.impl.entity.Elo
 import com.elo.elo_calculation.impl.entity.Match
 import com.elo.elo_calculation.impl.projection.*
 import com.elo.elo_calculation.impl.repository.*
@@ -29,8 +30,9 @@ class StatisticsServiceImpl(
             RatingChange(match[1].teamID,team2PrevElo,match[1].elo))
     }
 
-    override fun ratingOnCurrentDate(teamID : ID, date: String) : Int{
-        return eloRepository.findEloOnCurrentDate(teamID,date)?.elo ?: teamRepository.findByIdOrNull(teamID)?.let { return DEFAULT_ELO } ?: throw Exception()
+    override fun ratingOnCurrentDate(teamID : ID, date: String) : List<Elo>{
+        val elo = eloRepository.findEloOnCurrentDate(teamID,date) ?: return listOf(Elo("Not found",teamID,DEFAULT_ELO))
+        return listOf(elo)
     }
 
     override fun ratingOfAllTeamsOnCurrentDate(date: String) : List<LastMatchOfAllTeamsBeforeDateProjection> {

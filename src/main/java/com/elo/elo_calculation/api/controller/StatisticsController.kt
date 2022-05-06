@@ -22,7 +22,7 @@ class StatisticsController(private val statisticsService: StatisticsService) {
     }
 
     @GetMapping("/cur")
-    fun currentRating(@RequestParam teamID : ID, @RequestParam date: String) : Int{
+    fun currentRating(@RequestParam teamID : ID, @RequestParam date: String) : List<Elo>{
         return statisticsService.ratingOnCurrentDate(teamID,date)
     }
 
@@ -36,7 +36,7 @@ class StatisticsController(private val statisticsService: StatisticsService) {
         }
     }
 
-    @GetMapping("/history")
+    @GetMapping("/rating")
     fun historyRating(@RequestParam teamID : ID) : List<EloOfAllMatchesForTeamProjection> {
         return statisticsService.ratingOfTeamForAllTime(teamID)
     }
