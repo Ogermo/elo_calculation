@@ -93,33 +93,6 @@
                 <groupId>com.expediagroup</groupId>
                 <artifactId>graphql-kotlin-maven-plugin</artifactId>
                 <version>5.3.2</version>
-                <executions>
-                    <execution>
-                        <id>introspect-graphql-schema</id>
-                        <goals>
-                            <goal>introspect-schema</goal>
-                        </goals>
-                        <configuration>
-                            <headers>
-                                <Api-Key>N4yRsKzw9rKmE42kPk8QWvPg376cGJypQHkEU3VCuPHVbQxQQeQMnmXCUW9pJEdB</Api-Key>
-                            </headers>
-                            <endpoint>https://api.joinsport.io/graphql</endpoint>
-                            <schemaFile>${project.build.directory}/schema.graphql</schemaFile>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>generate-graphql-client</id>
-                        <goals>
-                            <goal>generate-client</goal>
-                        </goals>
-                        <configuration>
-                            <useOptionalInputWrapper>true</useOptionalInputWrapper>
-                            <packageName>com.elo.elo_calculation.generated</packageName>
-                            <outputDirectory>src/main/java</outputDirectory>
-                            <schemaFile>${project.build.directory}/schema.graphql</schemaFile>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

@@ -1,0 +1,1060 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+"Directs the executor to include this field or fragment only when the `if` argument is true"
+directive @include(
+    "Included when true."
+    if: Boolean!
+  ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+"Directs the executor to skip this field or fragment when the `if`'argument is true."
+directive @skip(
+    "Skipped when true."
+    if: Boolean!
+  ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+"Marks the field, argument, input field or enum value as deprecated"
+directive @deprecated(
+    "The reason for the deprecation"
+    reason: String = "No longer supported"
+  ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM_VALUE | INPUT_FIELD_DEFINITION
+
+"Exposes a URL that specifies the behaviour of this scalar."
+directive @specifiedBy(
+    "The URL that specifies the behaviour of this scalar."
+    url: String!
+  ) on SCALAR
+
+interface PersonInterface {
+  first_name: String!
+  last_name: String!
+  middle_name: String!
+}
+
+type Album {
+  album_id: ID!
+  author: String
+  cover: Photo
+  cover_id: Int
+  is_public: Boolean
+  on_main: Boolean
+  photos: [Photo!]!
+  published_dt: DateTime
+  source_url: String
+  storage: String!
+  tags: [Tag!]!
+  title: String!
+}
+
+"A paginated list of Album items."
+type AlbumPaginator {
+  "A list of Album items."
+  data: [Album!]!
+  "Pagination information about the list of items."
+  paginatorInfo: PaginatorInfo!
+}
+
+type AppearanceSettings {
+  player_photo: Image
+  team_cover: Image
+  team_logo: Image
+  tournament_cover: Image
+}
+
+type Application {
+  name: String!
+  status: String!
+  team: Team!
+}
+
+type ApplicationDetails {
+  name: String!
+  players: [ApplicationPlayer!]!
+  status: String!
+  team: Team!
+  team_id: Int!
+  tournament_id: Int!
+}
+
+type ApplicationPlayer {
+  application_dt: DateTime
+  captain: Boolean
+  exclude_dt: DateTime
+  include_dt: DateTime
+  number: Int
+  player: Player!
+  player_id: Int!
+  position_id: Int
+  status: String!
+  team_id: Int!
+  tournament_id: Int!
+}
+
+type Category {
+  name: String!
+}
+
+type Goal {
+  additional: Int
+  assistant: Player
+  assistant_id: Int
+  id: ID!
+  minute: Int
+  number: Int
+  player: Player!
+  player_id: Int!
+  second: Int
+  situation: GoalSituation!
+  team_id: Int!
+}
+
+type GoalMissed {
+  count: Int
+  id: ID!
+  player: Player!
+  player_id: Int!
+  team_id: Int!
+}
+
+type Image {
+  name: String!
+  sizes: [ImageSize!]!
+  urlTemplate: String!
+}
+
+type ImageSize {
+  alias: String!
+  height: Int
+  width: Int!
+}
+
+type Match {
+  ga: Int
+  gap: Int
+  gf: Int
+  gfp: Int
+  is_live: Boolean
+  match_id: ID!
+  number: Int
+  overtime: Boolean
+  preview: String
+  referee: Referee
+  round_id: Int!
+  series_id: Int
+  stadium: Stadium
+  stadium_id: Int
+  start_dt: DateTime
+  team1: Team
+  team2: Team
+  technical: Boolean
+  timezone: String
+  tour: Tour
+  tournament: TournamentInfo!
+  tournament_id: Int!
+  video_url: String
+}
+
+type MatchDetails {
+  ga: Int
+  gap: Int
+  gf: Int
+  gfp: Int
+  goals: [Goal!]!
+  goalsMissed: [GoalMissed!]!
+  is_live: Boolean
+  match_id: ID!
+  number: Int
+  overtime: Boolean
+  players: [MatchPlayer!]!
+  preview: String
+  protocol: Protocol!
+  redCards: [RedCard!]!
+  referee: Referee
+  referees: [MatchReferee!]!
+  round_id: Int!
+  series: [MatchSeries!]!
+  series_id: Int
+  shootouts: [Shootout!]!
+  stadium: Stadium
+  stadium_id: Int
+  staff: [MatchStaff!]!
+  start_dt: DateTime
+  stats1: MatchStats
+  stats2: MatchStats
+  substitutions: [Substitution!]!
+  team1: Team
+  team2: Team
+  technical: Boolean
+  timezone: String
+  tour: Tour
+  tournament: TournamentInfo!
+  tournament_id: Int!
+  video_url: String
+  yellowCards: [YellowCard!]!
+}
+
+"A paginated list of Match items."
+type MatchPaginator {
+  "A list of Match items."
+  data: [Match!]!
+  "Pagination information about the list of items."
+  paginatorInfo: PaginatorInfo!
+}
+
+type MatchPlayer {
+  captain: Boolean!
+  goalkeeper: Boolean!
+  id: ID!
+  number: Int
+  player: Player!
+  player_id: Int!
+  status: MatchPlayerStatus!
+  team_id: Int!
+}
+
+type MatchReferee {
+  position: RefereePosition!
+  position_id: Int!
+  profile: Referee!
+  referee_id: Int!
+}
+
+type MatchSeries {
+  games: Int!
+  goals1: Int
+  goals2: Int
+  left_series_id: Int
+  length: Int!
+  loose_series_id: Int
+  next_series_id: Int
+  right_series_id: Int
+  round_id: Int!
+  score1: Int!
+  score2: Int!
+  series_id: ID!
+  team1_id: Int
+  team2_id: Int
+  tour_id: Int!
+  tournament_id: Int!
+  tree_id: Int!
+  type: String!
+}
+
+type MatchStaff {
+  coach: Boolean!
+  id: ID!
+  staff_id: Int!
+  status: MatchStaffStatus!
+  team_id: Int!
+}
+
+type MatchStats {
+  attendance: Int
+  corners_first_half: Int
+  corners_overall: Int
+  discipline_mark: Float
+  fouls_first_half: Int
+  fouls_overall: Int
+  goals_first_half: Int
+  offsides_overall: Int
+  possession: Int
+  postbar_first_half: Int
+  postbar_overall: Int
+  referee_mark: Float
+  shoots_first_half: Int
+  shoots_overall: Int
+  shoots_target_first_half: Int
+  shoots_target_overall: Int
+  team_id: Int!
+}
+
+type Mutation {
+  vkAuth(email: String!, sign: String!, user_id: Int!): VkAuthPayLoad!
+  vkCancelTeamSubscription(session: String!, team_id: Int!): Boolean!
+  vkCreateTeamSubscription(session: String!, team_id: Int!): Boolean!
+  vkSaveGroupToken(token: String!): Boolean!
+}
+
+"Pagination information about the corresponding list of items."
+type PageInfo {
+  "Count of nodes in current request."
+  count: Int
+  "Current page of request."
+  currentPage: Int
+  "When paginating forwards, the cursor to continue."
+  endCursor: String
+  "When paginating forwards, are there more items?"
+  hasNextPage: Boolean!
+  "When paginating backwards, are there more items?"
+  hasPreviousPage: Boolean!
+  "Last page in connection."
+  lastPage: Int
+  "When paginating backwards, the cursor to continue."
+  startCursor: String
+  "Total number of node in connection."
+  total: Int
+}
+
+"Pagination information about the corresponding list of items."
+type PaginatorInfo {
+  "Total count of available items in the page."
+  count: Int!
+  "Current pagination page."
+  currentPage: Int!
+  "Index of first item in the current page."
+  firstItem: Int
+  "If collection has more pages."
+  hasMorePages: Boolean!
+  "Index of last item in the current page."
+  lastItem: Int
+  "Last page number of the collection."
+  lastPage: Int!
+  "Number of items per page in the collection."
+  perPage: Int!
+  "Total items available in the collection."
+  total: Int!
+}
+
+type Photo {
+  album_id: Int!
+  description: String
+  image: String!
+  image_variations: String
+  photo_id: ID!
+  published_dt: DateTime!
+  source_id: Int
+  storage: String!
+}
+
+type Player implements PersonInterface {
+  application: TeamPlayer
+  birthday: Date
+  birthplace: String
+  first_name: String!
+  last_name: String!
+  middle_name: String!
+  photo: String
+  player_id: ID!
+  position_id: Int
+  vk_profile: String
+}
+
+"A paginated list of Player items."
+type PlayerPaginator {
+  "A list of Player items."
+  data: [Player!]!
+  "Pagination information about the list of items."
+  paginatorInfo: PaginatorInfo!
+}
+
+type Post {
+  author: String
+  image: String
+  is_public: Boolean
+  is_temp: Boolean
+  lead: String
+  on_main: Boolean
+  on_main_slider: Boolean
+  on_parent: Boolean
+  post_id: ID!
+  published_dt: DateTime
+  tags: [Tag!]!
+  text: String
+  title: String
+}
+
+"A paginated list of Post items."
+type PostPaginator {
+  "A list of Post items."
+  data: [Post!]!
+  "Pagination information about the list of items."
+  paginatorInfo: PaginatorInfo!
+}
+
+type Protocol {
+  attendance: Int
+  bestPlayer: Player
+  bestPlayerTeam: Player
+  bestTeam1Player: Player
+  bestTeam2Player: Player
+  best_player_id: Int
+  best_player_team_id: Int
+  best_team1_player_id: Int
+  best_team2_player_id: Int
+  break_duration: Int
+  end_dt: DateTime
+  first_half_addition: Int
+  form_color_away: String
+  form_color_home: String
+  incidents: String
+  protocol_id: ID!
+  second_half_addition: Int
+  start_dt: DateTime
+  traumatic_events: String
+}
+
+type Query {
+  albums(
+    filters: AlbumFilterInput, 
+    "Limits number of fetched elements."
+    first: Int!, 
+    "The offset from which elements are returned."
+    page: Int
+  ): AlbumPaginator
+  appearanceSettings: AppearanceSettings!
+  application(team_id: ID!, tournament_id: ID!): ApplicationDetails
+  calendar(
+    filters: MatchFilter, 
+    "Limits number of fetched elements. Maximum allowed value: 500."
+    first: Int = 120, 
+    "The offset from which elements are returned."
+    page: Int
+  ): MatchPaginator
+  match(match_id: ID!): MatchDetails
+  me: User
+  players(
+    filters: PlayerFilterInput, 
+    "Limits number of fetched elements."
+    first: Int!, 
+    "The offset from which elements are returned."
+    page: Int
+  ): PlayerPaginator
+  posts(
+    filters: PostFilterInput, 
+    "Limits number of fetched elements."
+    first: Int!, 
+    "The offset from which elements are returned."
+    page: Int
+  ): PostPaginator
+  round(round_id: ID!): RoundDetails
+  rounds(
+    filters: RoundFilterInput, 
+    "Limits number of fetched elements."
+    first: Int = 20, 
+    "The offset from which elements are returned."
+    page: Int, 
+    sorters: [QueryRoundsSortersOrderByClause!]
+  ): RoundPaginator
+  seasons: [Season!]!
+  stats(
+    aggregates: [StatsPlayerValueColumn!], 
+    filters: StatsPlayerFilter, 
+    "Limits number of fetched elements."
+    first: Int = 50, 
+    groupers: [StatsPlayerGrouper!], 
+    "The offset from which elements are returned."
+    page: Int, 
+    sorters: [QueryStatsSortersOrderByClause!]
+  ): StatsPlayerPaginator
+  team(team_id: ID!): Team
+  teams(
+    filters: TeamFilterInput, 
+    "Limits number of fetched elements."
+    first: Int!, 
+    "The offset from which elements are returned."
+    page: Int
+  ): TeamPaginator
+  teamsStats(
+    aggregates: [StatsTeamValueColumn!], 
+    filters: StatsTeamFilter, 
+    "Limits number of fetched elements."
+    first: Int = 50, 
+    groupers: [StatsTeamGrouper!], 
+    "The offset from which elements are returned."
+    page: Int, 
+    sorters: [QueryTeamsStatsSortersOrderByClause!]
+  ): StatsTeamPaginator
+  tournament(tournament_id: ID!): TournamentDetails
+  tournaments(
+    filters: TournamentFilterInput, 
+    "Limits number of fetched elements."
+    first: Int = 20, 
+    "The offset from which elements are returned."
+    page: Int, 
+    sorters: [QueryTournamentsSortersOrderByClause!]
+  ): TournamentPaginator
+  videos(
+    filters: VideoFilterInput, 
+    "Limits number of fetched elements."
+    first: Int!, 
+    "The offset from which elements are returned."
+    page: Int
+  ): VideoPaginator
+  vkCheckTeamSubscription(session: String!, team_id: Int!): Boolean!
+}
+
+type RedCard {
+  additional: Int
+  disqualification_id: Int
+  id: ID!
+  minute: Int
+  number: Int
+  person: PersonInterface!
+  person_id: Int!
+  person_type: String!
+  player: PersonInterface!
+  player_id: Int
+  reason: String
+  second: Int
+  second_yellow: Boolean!
+  team_id: Int!
+}
+
+type Referee {
+  birthday: Date
+  birthplace: String
+  category_id: Int
+  first_name: String!
+  last_name: String!
+  middle_name: String!
+  referee_id: ID!
+}
+
+type RefereePosition {
+  alias: String!
+  position_id: ID!
+  short_title: String!
+  title: String!
+}
+
+type Round {
+  name: String!
+  order: Int
+  round_id: ID!
+}
+
+type RoundDetails {
+  calendar: [Match!]!
+  has_table: Boolean
+  name: String!
+  order: Int
+  series_length: Int
+  series_type: String
+  tableRows: [TableRow!]!
+  target: Int!
+  teams: [Team!]!
+  tours: [Tour!]!
+  type_id: RoundType
+}
+
+"A paginated list of Round items."
+type RoundPaginator {
+  "A list of Round items."
+  data: [Round!]!
+  "Pagination information about the list of items."
+  paginatorInfo: PaginatorInfo!
+}
+
+type Season {
+  end_dt: Date
+  season_id: ID!
+  start_dt: Date!
+  title: String!
+}
+
+type Shootout {
+  id: ID!
+  number: Int
+  player: Player!
+  player_id: Int!
+  result: ShootoutResult!
+  team_id: Int!
+}
+
+type Stadium {
+  address: String!
+  name: String!
+  stadium_id: ID!
+}
+
+type Staff implements PersonInterface {
+  first_name: String!
+  last_name: String!
+  middle_name: String!
+  position: String!
+  staff_id: ID!
+}
+
+type StatsPlayer {
+  assists: Int
+  best_match_player: Int
+  best_team_player: Int
+  "3 * КК + ЖК"
+  discipline: Int
+  games: Int
+  gk_games: Int
+  gk_shootouts: Int
+  goals: Int
+  id: ID!
+  missed_goals: Int
+  penalties: Int
+  player: Player
+  player_id: Int!
+  "Гол + пас"
+  points: Int
+  red_cards: Int
+  round_id: Int!
+  saltworts: Int
+  season_id: Int
+  team: Team
+  team_id: Int!
+  ten_penalties: Int
+  tournament_id: Int!
+  yellow_cards: Int
+}
+
+"A paginated list of StatsPlayer items."
+type StatsPlayerPaginator {
+  "A list of StatsPlayer items."
+  data: [StatsPlayer!]!
+  "Pagination information about the list of items."
+  paginatorInfo: PaginatorInfo!
+}
+
+type StatsTeam {
+  draws: Int
+  ga: Int
+  games: Int
+  gf: Int
+  gf_penalty: Int
+  id: ID!
+  losses: Int
+  red_cards: Int
+  season_id: Int
+  shootout: Int
+  team: Team
+  team_id: Int!
+  tournament_id: Int!
+  wins: Int
+  yellow_cards: Int
+}
+
+"A paginated list of StatsTeam items."
+type StatsTeamPaginator {
+  "A list of StatsTeam items."
+  data: [StatsTeam!]!
+  "Pagination information about the list of items."
+  paginatorInfo: PaginatorInfo!
+}
+
+type Substitution {
+  additional: Int
+  id: ID!
+  minute: Int
+  number: Int
+  playerIn: Player!
+  playerOut: Player!
+  player_in: Int!
+  player_in_number: Int
+  player_out: Int!
+  player_out_number: Int
+  second: Int
+  team_id: Int!
+}
+
+type TableRow {
+  draws: Int!
+  ga: Int!
+  games: Int!
+  gf: Int!
+  losses: Int!
+  losses_ot: Int!
+  losses_so: Int!
+  pa: Int!
+  pf: Int!
+  place: Int
+  points: Int!
+  team: Team!
+  wins: Int!
+  wins_ot: Int!
+  wins_so: Int!
+}
+
+type Tag {
+  albums(filters: AlbumFilterInput): [Album!]!
+  color: String!
+  frequency: Int!
+  full_name: String!
+  item_id: Int!
+  module: String!
+  name: String!
+  posts(filters: PostFilterInput): [Post!]!
+  tag_id: ID!
+  videos(filters: VideoFilterInput): [Video!]!
+}
+
+type Team {
+  cover: String
+  cover_with_meta: Image
+  description: String
+  full_name: String!
+  is_archived: Boolean
+  is_deleted: Boolean
+  logo: String
+  main_form_color: String
+  players: [Player!]!
+  short_name: String
+  site: String
+  social_profile: String
+  spare_form_color: String
+  tag: Tag
+  team_id: ID!
+}
+
+"A paginated list of Team items."
+type TeamPaginator {
+  "A list of Team items."
+  data: [Team!]!
+  "Pagination information about the list of items."
+  paginatorInfo: PaginatorInfo!
+}
+
+type TeamPlayer {
+  in: Date
+  out: Date
+  player_id: Int!
+  status: String!
+  team_id: Int!
+}
+
+type Tour {
+  round_id: Int!
+  tour_id: ID!
+  tour_number: Int!
+  tree_id: Int
+}
+
+type Tournament {
+  category: Category
+  category_id: Int
+  cover: String
+  cover_with_meta: Image
+  description: String
+  end_dt: Date!
+  full_name: String!
+  is_parent: Boolean
+  is_published: Boolean
+  order: Int
+  parent_tournament_id: Int
+  season_id: Int
+  short_name: String!
+  start_dt: Date!
+  tournament_id: ID!
+  type: Type
+  type_id: Int
+}
+
+type TournamentDetails {
+  app_end_dt: Date
+  app_start_dt: Date
+  applications: [Application!]!
+  category: Category
+  category_id: Int
+  cover: String
+  cover_with_meta: Image
+  description: String
+  end_dt: Date!
+  full_name: String!
+  in_schedule: Boolean
+  is_parent: Boolean
+  is_published: Boolean
+  order: Int
+  parent_tournament_id: Int
+  rounds: [Round!]!
+  season_id: Int
+  short_name: String!
+  start_dt: Date!
+  tournament_id: ID!
+  type: Type
+  type_id: Int
+}
+
+type TournamentInfo {
+  full_name: String!
+  order: Int
+  season_id: Int
+  short_name: String!
+  tournament_id: ID!
+}
+
+"A paginated list of Tournament items."
+type TournamentPaginator {
+  "A list of Tournament items."
+  data: [Tournament!]!
+  "Pagination information about the list of items."
+  paginatorInfo: PaginatorInfo!
+}
+
+type Type {
+  players_limit: Int!
+  title: String!
+}
+
+type User {
+  email: String!
+  id: ID!
+  role: Int!
+}
+
+type Video {
+  author: String
+  code: String
+  day_video: Boolean
+  description: String
+  embed_url: String
+  is_public: Boolean
+  on_main: Boolean
+  preview: String
+  published_dt: DateTime
+  tags: [Tag]!
+  title: String!
+  url: String
+  video_id: ID!
+}
+
+"A paginated list of Video items."
+type VideoPaginator {
+  "A list of Video items."
+  data: [Video!]!
+  "Pagination information about the list of items."
+  paginatorInfo: PaginatorInfo!
+}
+
+type VkAuthPayLoad {
+  token: String!
+  user: User!
+}
+
+type YellowCard {
+  additional: Int
+  disqualification_id: Int
+  id: ID!
+  minute: Int
+  number: Int
+  person: PersonInterface!
+  person_id: Int!
+  person_type: String!
+  player: PersonInterface!
+  player_id: Int
+  reason: String
+  second: Int
+  team_id: Int!
+}
+
+enum GoalSituation {
+  SITUATION_AUTOGOAL
+  SITUATION_GAME
+  SITUATION_MISSED_PENALTY
+  SITUATION_MISSED_PENALTY_10
+  SITUATION_MISSED_PENALTY_10_GK
+  SITUATION_MISSED_PENALTY_10_MISS
+  SITUATION_MISSED_PENALTY_GK
+  SITUATION_MISSED_PENALTY_MISS
+  SITUATION_PENALTY
+  SITUATION_PENALTY_10
+  SITUATION_STANDARD
+}
+
+enum MatchPlayerStatus {
+  STATUS_ODD
+  STATUS_START
+}
+
+enum MatchStaffStatus {
+  STATUS_START
+}
+
+"Allowed column names for the `sorters` argument on field `rounds` on type `Query`."
+enum QueryRoundsSortersColumn {
+  NAME
+  ORDER
+}
+
+"Allowed column names for the `sorters` argument on field `tournaments` on type `Query`."
+enum QueryTournamentsSortersColumn {
+  FULL_NAME
+  ORDER
+  START_DT
+}
+
+enum RoundType {
+  FREE
+  PLAYOFF
+  ROUND_ROBIN_ONE
+  ROUND_ROBIN_THREE
+  ROUND_ROBIN_TWO
+}
+
+enum ShootoutResult {
+  RESULT_GK
+  RESULT_GOAL
+  RESULT_MISS
+}
+
+"The available directions for ordering a list of records."
+enum SortOrder {
+  ASC
+  DESC
+}
+
+enum StatsPlayerGrouper {
+  PLAYER
+  ROUND
+  SEASON
+  TOURNAMENT
+}
+
+enum StatsPlayerValueColumn {
+  ASSISTS
+  BEST_MATCH_PLAYER
+  BEST_TEAM_PLAYER
+  DISCIPLINE
+  GAMES
+  GK_GAMES
+  GK_SHOOTOUTS
+  GOALS
+  MISSED_GOALS
+  PENALTIES
+  POINTS
+  RED_CARDS
+  SALTWORTS
+  TEN_PENALTIES
+  YELLOW_CARDS
+}
+
+enum StatsTeamGrouper {
+  SEASON
+  TEAM
+  TOURNAMENT
+}
+
+enum StatsTeamValueColumn {
+  DRAWS
+  GA
+  GAMES
+  GF
+  GF_PENALTY
+  LOSSES
+  RED_CARDS
+  SHOOTOUT
+  WINS
+  YELLOW_CARDS
+}
+
+"Specify if you want to include or exclude trashed results from a query."
+enum Trashed {
+  ONLY
+  WITH
+  WITHOUT
+}
+
+"A date string with format `Y-m-d`, e.g. `2011-05-23`."
+scalar Date
+
+"A datetime string with format `Y-m-d H:i:s`, e.g. `2018-05-23 13:43:32`."
+scalar DateTime
+
+"A datetime and timezone string in ISO 8601 format `Y-m-dTH:i:sO`, e.g. `2020-04-20T13:53:12+02:00`."
+scalar DateTimeTz
+
+input AlbumFilterInput {
+  orderBy: [OrderByClause!]
+}
+
+input DateRange {
+  from: Date!
+  to: Date!
+}
+
+input MatchFilter {
+  has_score: Boolean
+  round_id: Int
+  season_id: Int
+  start_date: Date
+  start_date_range: DateRange
+  team_id: Int
+  tour_number: Int
+  tournament_id: Int
+}
+
+"Allows ordering a list of records."
+input OrderByClause {
+  "The column that is used for ordering."
+  column: String!
+  "The direction that is used for ordering."
+  order: SortOrder!
+}
+
+input PlayerFilterInput {
+  orderBy: [OrderByClause!]
+}
+
+input PostFilterInput {
+  orderBy: [OrderByClause!]
+}
+
+"Order by clause for the `sorters` argument on the query `rounds`."
+input QueryRoundsSortersOrderByClause {
+  "The column that is used for ordering."
+  column: QueryRoundsSortersColumn!
+  "The direction that is used for ordering."
+  order: SortOrder!
+}
+
+"Order by clause for the `sorters` argument on the query `stats`."
+input QueryStatsSortersOrderByClause {
+  "The column that is used for ordering."
+  column: StatsPlayerValueColumn!
+  "The direction that is used for ordering."
+  order: SortOrder!
+}
+
+"Order by clause for the `sorters` argument on the query `teamsStats`."
+input QueryTeamsStatsSortersOrderByClause {
+  "The column that is used for ordering."
+  column: StatsTeamValueColumn!
+  "The direction that is used for ordering."
+  order: SortOrder!
+}
+
+"Order by clause for the `sorters` argument on the query `tournaments`."
+input QueryTournamentsSortersOrderByClause {
+  "The column that is used for ordering."
+  column: QueryTournamentsSortersColumn!
+  "The direction that is used for ordering."
+  order: SortOrder!
+}
+
+input RoundFilterInput {
+  tournament_id: Int
+}
+
+input StatsPlayerFilter {
+  player_id: Int
+  round_id: Int
+  season_id: Int
+  team_id: Int
+  tournament_id: Int
+}
+
+input StatsTeamFilter {
+  season_id: Int
+  team_id: Int
+  tournament_id: Int
+}
+
+input TeamFilterInput {
+  orderBy: [OrderByClause!]
+  season_id: Int
+}
+
+input TournamentFilterInput {
+  exclude_parents: Boolean
+  season_id: Int
+}
+
+input VideoFilterInput {
+  orderBy: [OrderByClause!]
+}
